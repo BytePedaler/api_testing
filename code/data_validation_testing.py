@@ -50,65 +50,81 @@ data_h = {
 }
 
 
-def print_results(valid_records, duplicate_valid_records, invalid_records, duplicate_invalid_records):
+def print_results(validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids):
     print('Begin intake report: ')
-    print(f'    Found {len(valid_records)} valid game ids.')
+    print(f'    Found {len(valid_records_raw)} valid game ids.')
     print(f'    Skipped {len(duplicate_valid_records)} duplicated valid game ids.')
-    print(f'    Found {len(invalid_records)} invalid game ids.')
-    print(f'    Skipped {len(duplicate_invalid_records)} duplicated invalid game ids.')
+    print(f'    Found {len(invalid_records)} invalid records.')
+    print(f'    Found {len(invalid_game_ids)} invalid game ids.')
+    print(f'    Ingestion Status: {validation_status}')
     print('-----------------------')
 
 
 def validate_games(data_dict):
-    valid_records = []
+    valid_records_raw = []
+    valid_records_unique = []
     duplicate_valid_records = []
     invalid_records = []
-    duplicate_invalid_records = []
+    invalid_game_ids = []
+    validation_status = 'unable_to_assign'
     
     def valid_records_append(record):
-        if record not in valid_records:
-            valid_records.append(record)
+        valid_records_raw.append(record)
+        if record not in valid_records_unique:
+            valid_records_unique.append(record)
         else:
             duplicate_valid_records.append(record)
-            
+    
     def invalid_records_append(record):
-        if record not in invalid_records:
-            invalid_records.append(record)
-        else:
-            duplicate_invalid_records.append(record)
-
-    if "games" in data_dict:
-        if isinstance(data_dict["games"], list):
-            if len(data_dict["games"]) != 0: # Checks if not an empty list
-                # define a valid game record as a dictionary containing an id key whose value is a positive integer
-                # dictionary in a list in a dictionary
-                for game in data_dict["games"]:
-                    if isinstance(game, dict):
-                        if "id" in game: 
-                            if type(game["id"]) == int:
-                                if game["id"] > 0:
-                                    valid_records_append(game["id"])
-                                else: # Negative id number
-                                    invalid_records_append(game["id"])
-                            else: # Non-int id number
-                                invalid_records_append(game)
-                        else: # Key isn't "id"
-                            invalid_records_append(game)
-                    else: # game isn't a dict
-                        invalid_records_append(game)
-            else:
-                print(f'Advisory: {data_dict["games"]} is empty.')
-        else:
-            print(f'Error: Invalid type - {type(data_dict["games"])}')
-    else:
-        print('Games key is missing.')
+        invalid_records.append(record)
         
-    return valid_records, duplicate_valid_records, invalid_records, duplicate_invalid_records
+    def invalid_game_ids_append(record):
+        invalid_game_ids.append(record)
+
+
+    if not "games" in data_dict:
+        validation_status = 'response_error'
+        return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
+        
+    if not isinstance(data_dict["games"], list):
+        validation_status = 'response_error'
+        return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
+        
+    num_games = len(data_dict["games"])
+    
+    if len(data_dict["games"]) == 0:
+        validation_status = 'empty'
+        return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
+    
+    for game in data_dict["games"]:
+        if not isinstance(game, dict):
+            invalid_records_append(game)
+        elif not "id" in game:
+            invalid_records_append(game)
+        elif type(game["id"]) != int:
+            invalid_records_append(game["id"])
+            invalid_game_ids_append(game["id"])
+        elif game["id"] < 0:
+            invalid_records_append(game["id"])
+            invalid_game_ids_append(game["id"])
+        else: 
+            valid_records_append(game["id"])
+    
+    if len(valid_records_raw) <= 0:
+        validation_status = 'record_failure'
+        return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
+    else: 
+        if len(valid_records_raw) == num_games:
+            validation_status = 'success'
+            return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
+        else:
+            validation_status = 'partial_failure'
+            return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
 
 
 def validation_helper(data_set):
-    valid_records, duplicate_valid_records, invalid_records, duplicate_invalid_records = validate_games(data_set)
-    print_results(valid_records, duplicate_valid_records, invalid_records, duplicate_invalid_records)
+    validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids = validate_games(data_set)
+    print_results(validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids)
 
 
 def main():
@@ -121,7 +137,6 @@ def main():
     validation_helper(data_g)
     validation_helper(data_h)
     validation_helper(data_h)
-
 
 
 if __name__ == "__main__":
