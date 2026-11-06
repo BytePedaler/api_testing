@@ -49,11 +49,19 @@ data_h = {
     ]
 }
 
+data_i = {
+    "games": [
+        {"id": 101},
+        {"id": 101},
+        {"id": 102}
+    ]
+}
+
 
 def print_results(validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids):
     print('Begin intake report: ')
     print(f'    Found {len(valid_records_raw)} valid game ids.')
-    print(f'    Skipped {len(duplicate_valid_records)} duplicated valid game ids.')
+    print(f'    Found {len(duplicate_valid_records)} duplicated valid game ids.')
     print(f'    Found {len(invalid_records)} invalid records.')
     print(f'    Found {len(invalid_game_ids)} invalid game ids.')
     print(f'    Ingestion Status: {validation_status}')
@@ -82,7 +90,7 @@ def validate_games(data_dict):
         invalid_game_ids.append(record)
 
 
-    if not "games" in data_dict:
+    if "games" not in data_dict:
         validation_status = 'response_error'
         return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
         
@@ -104,7 +112,7 @@ def validate_games(data_dict):
         elif type(game["id"]) != int:
             invalid_records_append(game["id"])
             invalid_game_ids_append(game["id"])
-        elif game["id"] < 0:
+        elif game["id"] <= 0:
             invalid_records_append(game["id"])
             invalid_game_ids_append(game["id"])
         else: 
