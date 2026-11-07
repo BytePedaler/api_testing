@@ -57,5 +57,5 @@ def test_bool_id():
     
     result = validate_games(test_data)
     
-    assert len(result[4]) == 1
+    assert result[4] == [True]
     assert len(result[2]) == 0
