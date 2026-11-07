@@ -57,10 +57,18 @@ data_i = {
     ]
 }
 
+data_j = {
+    "games": [
+        {"id": 101},
+        {"id": 101},
+        "hello"
+    ]
+}
 
-def print_results(validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids):
+def print_results(validation_status, valid_records_raw, valid_records_unique, duplicate_valid_records, invalid_records, invalid_game_ids):
     print('Begin intake report: ')
     print(f'    Found {len(valid_records_raw)} valid game ids.')
+    print(f'    Found {len(valid_records_unique)} unique valid game ids.')
     print(f'    Found {len(duplicate_valid_records)} duplicated valid game ids.')
     print(f'    Found {len(invalid_records)} invalid records.')
     print(f'    Found {len(invalid_game_ids)} invalid game ids.')
@@ -92,17 +100,17 @@ def validate_games(data_dict):
 
     if "games" not in data_dict:
         validation_status = 'response_error'
-        return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
+        return validation_status, valid_records_raw, valid_records_unique, duplicate_valid_records, invalid_records, invalid_game_ids
         
     if not isinstance(data_dict["games"], list):
         validation_status = 'response_error'
-        return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
+        return validation_status, valid_records_raw, valid_records_unique, duplicate_valid_records, invalid_records, invalid_game_ids
         
     num_games = len(data_dict["games"])
     
     if len(data_dict["games"]) == 0:
         validation_status = 'empty'
-        return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
+        return validation_status, valid_records_raw, valid_records_unique, duplicate_valid_records, invalid_records, invalid_game_ids
     
     for game in data_dict["games"]:
         if not isinstance(game, dict):
@@ -120,19 +128,24 @@ def validate_games(data_dict):
     
     if len(valid_records_raw) <= 0:
         validation_status = 'record_failure'
-        return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
+        return validation_status, valid_records_raw, valid_records_unique, duplicate_valid_records, invalid_records, invalid_game_ids
     else: 
-        if len(valid_records_raw) == num_games:
+        if len(valid_records_unique) == num_games:
             validation_status = 'success'
-            return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
-        else:
+            return validation_status, valid_records_raw, valid_records_unique, duplicate_valid_records, invalid_records, invalid_game_ids
+        elif len(invalid_records) > 0:
             validation_status = 'partial_failure'
-            return validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids
+            return validation_status, valid_records_raw, valid_records_unique, duplicate_valid_records, invalid_records, invalid_game_ids
+        elif len(valid_records_unique) < len(valid_records_raw):
+            validation_status = 'duplicate_records'
+            return validation_status, valid_records_raw, valid_records_unique, duplicate_valid_records, invalid_records, invalid_game_ids
+        else:
+            return validation_status, valid_records_raw, valid_records_unique, duplicate_valid_records, invalid_records, invalid_game_ids
 
 
 def validation_helper(data_set):
-    validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids = validate_games(data_set)
-    print_results(validation_status, valid_records_raw, duplicate_valid_records, invalid_records, invalid_game_ids)
+    validation_status, valid_records_raw, valid_records_unique, duplicate_valid_records, invalid_records, invalid_game_ids = validate_games(data_set)
+    print_results(validation_status, valid_records_raw, valid_records_unique, duplicate_valid_records, invalid_records, invalid_game_ids)
 
 
 def main():
@@ -145,6 +158,8 @@ def main():
     validation_helper(data_g)
     validation_helper(data_h)
     validation_helper(data_h)
+    validation_helper(data_i)
+    validation_helper(data_j)
 
 
 if __name__ == "__main__":
