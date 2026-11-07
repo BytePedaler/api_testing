@@ -2,3 +2,9 @@ code/main_deps/__pycache__
 code\main_deps\__pycache__
 learning_data
 data 
+nhl_api_practice/__pycache__/game_validation.cpython-311.pyc
+nhl_api_practice/__pycache__/test_game_validation.cpython-314-pytest-9.2.0.pyc
+validation/main_deps/__pycache__/api_practice.cpython-314.pyc
+validation/__pycache__/data_validation_testing.cpython-314.pyc
+validation/main_deps/__pycache__/config.cpython-314.pyc
+nhl_api_practice/Notes.ipynb

@@ -115,7 +115,7 @@ def validate_games(data_dict):
     for game in data_dict["games"]:
         if not isinstance(game, dict):
             invalid_records_append(game)
-        elif not "id" in game:
+        elif "id" not in game:
             invalid_records_append(game)
         elif type(game["id"]) != int:
             invalid_records_append(game["id"])
