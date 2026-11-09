@@ -65,6 +65,12 @@ data_j = {
     ]
 }
 
+data_jtwo = {
+    "games": [
+        {"id": True}
+    ]
+}
+
 def print_results(validation_status, valid_records_raw, valid_records_unique, duplicate_valid_records, invalid_records, invalid_game_ids):
     print('Begin intake report: ')
     print(f'    Found {len(valid_records_raw)} valid game ids.')
@@ -160,6 +166,7 @@ def main():
     validation_helper(data_h)
     validation_helper(data_i)
     validation_helper(data_j)
+    validation_helper(data_jtwo)
 
 
 if __name__ == "__main__":
