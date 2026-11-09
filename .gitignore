@@ -8,3 +8,4 @@ validation/main_deps/__pycache__/api_practice.cpython-314.pyc
 validation/__pycache__/data_validation_testing.cpython-314.pyc
 validation/main_deps/__pycache__/config.cpython-314.pyc
 nhl_api_practice/Notes.ipynb
+nhl_api_practice/testing_env.py

@@ -7,7 +7,7 @@ def test_empty_games():
 
     result = validate_games(test_data)
 
-    assert result[0] == "empty"
+    assert result["status"] == "empty"
     
 def test_success():
     test_data = {
@@ -19,7 +19,7 @@ def test_success():
     
     result = validate_games(test_data)
     
-    assert result[0] == "success"
+    assert result["status"] == "success"
     
 def test_duplicate_games():
     data_i = {
@@ -32,8 +32,8 @@ def test_duplicate_games():
     
     result = validate_games(data_i)
     
-    assert result[0] == "duplicate_records"
-    assert len(result[3]) == 1
+    assert result["status"] == "duplicate_records"
+    assert len(result["duplicate_valid_records"]) == 1
     
 def test_mixed_validity():
     data_j = {
@@ -46,10 +46,10 @@ def test_mixed_validity():
     
     result = validate_games(data_j)
     
-    assert result[0] == "partial_failure"
-    assert len(result[1]) == 2
-    assert len(result[3]) == 1
-    assert len(result[4]) == 1
+    assert result["status"] == "partial_failure"
+    assert len(result["valid_records_raw"]) == 2
+    assert len(result["duplicate_valid_records"]) == 1
+    assert len(result["invalid_records"]) == 1
     
     
 def test_bool_id():
@@ -61,9 +61,9 @@ def test_bool_id():
     
     result = validate_games(test_data)
     
-    assert result[0] == "record_failure"
-    assert result[4] == [True]
-    assert len(result[2]) == 0
+    assert result["status"] == "record_failure"
+    assert result["invalid_records"] == [True]
+    assert len(result["valid_records_unique"]) == 0
     
 
 def test_zero_id():
@@ -75,9 +75,9 @@ def test_zero_id():
     
     result = validate_games(test_data)
     
-    assert result[0] == "record_failure"
-    assert len(result[4]) == 1
-    assert len(result[5]) == 1
+    assert result["status"] == "record_failure"
+    assert len(result["invalid_records"]) == 1
+    assert len(result["invalid_game_ids"]) == 1
 
     
 def test_missing_games_key():
@@ -89,9 +89,10 @@ def test_missing_games_key():
     
     result = validate_games(test_data)
     
-    assert result[0] == "response_error"
+    assert result["status"] == "response_error"
 
-def test_duplicated_success_call():
+
+def test_repeated_calls_are_independent():
     test_data = {
         "games": [
             {"id": 101},
@@ -100,8 +101,10 @@ def test_duplicated_success_call():
     }
     
     result = validate_games(test_data)
-    result = validate_games(test_data)
+    resultt = validate_games(test_data)
     
-    assert result[0] == "success"
-    assert len(result[2]) == 2
-    assert len(result[3]) == 0
+    assert result["status"] == "success"
+    assert len(result["valid_records_unique"]) == 2
+    assert len(resultt["valid_records_unique"]) == 2
+    assert len(result["duplicate_valid_records"]) == 0
+    assert len(resultt["duplicate_valid_records"]) == 0
