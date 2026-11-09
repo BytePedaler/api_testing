@@ -71,6 +71,7 @@ data_jtwo = {
     ]
 }
 
+
 def print_results(results):
     print('Begin intake report: ')
     print(f'    Found {len(results["valid_records_raw"])} valid game ids.')

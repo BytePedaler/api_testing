@@ -1,5 +1,6 @@
 from validation.data_validation_testing import validate_games
 
+
 def test_empty_games():
     test_data = {
         "games": []
@@ -8,7 +9,8 @@ def test_empty_games():
     result = validate_games(test_data)
 
     assert result["status"] == "empty"
-    
+
+
 def test_success():
     test_data = {
         "games": [
@@ -20,7 +22,8 @@ def test_success():
     result = validate_games(test_data)
     
     assert result["status"] == "success"
-    
+
+
 def test_duplicate_games():
     data_i = {
         "games": [
@@ -33,8 +36,9 @@ def test_duplicate_games():
     result = validate_games(data_i)
     
     assert result["status"] == "duplicate_records"
-    assert len(result["duplicate_valid_records"]) == 1
-    
+    assert result["duplicate_valid_records"] == [101]
+
+
 def test_mixed_validity():
     data_j = {
         "games": [
@@ -47,11 +51,11 @@ def test_mixed_validity():
     result = validate_games(data_j)
     
     assert result["status"] == "partial_failure"
-    assert len(result["valid_records_raw"]) == 2
-    assert len(result["duplicate_valid_records"]) == 1
-    assert len(result["invalid_records"]) == 1
-    
-    
+    assert result["valid_records_raw"] == [101, 101]
+    assert result["duplicate_valid_records"] == [101]
+    assert result["invalid_records"] == ["hello"]
+
+
 def test_bool_id():
     test_data = {
         "games": [
@@ -63,8 +67,8 @@ def test_bool_id():
     
     assert result["status"] == "record_failure"
     assert result["invalid_records"] == [True]
-    assert len(result["valid_records_unique"]) == 0
-    
+    assert result["valid_records_unique"] == []
+
 
 def test_zero_id():
     test_data = {
@@ -76,10 +80,10 @@ def test_zero_id():
     result = validate_games(test_data)
     
     assert result["status"] == "record_failure"
-    assert len(result["invalid_records"]) == 1
-    assert len(result["invalid_game_ids"]) == 1
+    assert result["invalid_records"] == [0]
+    assert result["invalid_game_ids"] == [0]
 
-    
+
 def test_missing_games_key():
     test_data = {
         "gaames": [
@@ -100,11 +104,29 @@ def test_repeated_calls_are_independent():
         ]
     }
     
-    result = validate_games(test_data)
-    resultt = validate_games(test_data)
+    first_result = validate_games(test_data)
+    secont_result = validate_games(test_data)
     
-    assert result["status"] == "success"
-    assert len(result["valid_records_unique"]) == 2
-    assert len(resultt["valid_records_unique"]) == 2
-    assert len(result["duplicate_valid_records"]) == 0
-    assert len(resultt["duplicate_valid_records"]) == 0
+    assert first_result["status"] == "success"
+    assert secont_result["status"] == "success"
+    assert first_result["valid_records_unique"] == [101, 102]
+    assert secont_result["valid_records_unique"] == [101, 102]
+    assert first_result["duplicate_valid_records"] == []
+    assert secont_result["duplicate_valid_records"] == []
+
+
+def test_mixed_validity_two():
+    data_j = {
+        "games": [
+            {"id": 101},
+            {"id": 101},
+            {"id": "hello"}
+        ]
+    }
+    
+    result = validate_games(data_j)
+    
+    assert result["status"] == "partial_failure"
+    assert result["valid_records_raw"] == [101, 101]
+    assert result["duplicate_valid_records"] == [101]
+    assert result["invalid_records"] == ["hello"]
